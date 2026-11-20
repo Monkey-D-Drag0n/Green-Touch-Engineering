@@ -4,17 +4,13 @@ import os
 import re
 import time
 from contextlib import suppress
-from datetime import datetime, timedelta, timezone
-from html import escape
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Annotated, Optional
 
-from bson import ObjectId
 from dotenv import load_dotenv
 from fastapi import APIRouter, FastAPI, HTTPException, Request, Response
-from motor.motor_asyncio import AsyncIOMotorClient
-from pydantic import BaseModel, BeforeValidator, ConfigDict, EmailStr, Field
-from pymongo import ASCENDING, DESCENDING, IndexModel
+from pydantic import BaseModel, ConfigDict, Field
 from starlette.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -27,78 +23,11 @@ from slowapi.errors import RateLimitExceeded
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-from emailer import send_email  # noqa: E402
-
-client = AsyncIOMotorClient(os.environ['MONGO_URL'])
-db = client[os.environ['DB_NAME']]
-
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Rate limiter configuration
 limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute", "1000/hour"])
-
-INDEXES: dict[str, list[IndexModel]] = {
-    "enquiries": [
-        IndexModel([("created_at", DESCENDING)], name="created_at_desc"),
-        IndexModel([("ip", ASCENDING), ("created_at", DESCENDING)], name="ip_created_at"),
-    ],
-}
-
-
-async def ensure_indexes() -> None:
-    for collection, models in INDEXES.items():
-        for model in models:
-            try:
-                await db[collection].create_indexes([model])
-            except Exception as exc:
-                logger.error("ensure_indexes(%s.%s): %s", collection, model.document["name"], exc)
-
-
-PyObjectId = Annotated[str, BeforeValidator(lambda v: str(v) if isinstance(v, ObjectId) else v)]
-
-
-class BaseDocument(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-    id: Optional[PyObjectId] = Field(default=None, alias="_id")
-
-    def to_mongo(self) -> dict:
-        doc = self.model_dump(by_alias=True)
-        doc.pop("_id", None)
-        return doc
-
-    @classmethod
-    def from_mongo(cls, doc: dict):
-        return cls(**doc)
-
-
-class EnquiryCreate(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True)
-    name: str = Field(min_length=2, max_length=120)
-    email: EmailStr
-    phone: str = Field(min_length=7, max_length=20, pattern=r"^[0-9+\-\s()]+$")
-    service: str = Field(min_length=2, max_length=120)
-    project_location: str = Field(min_length=2, max_length=160)
-    message: str = Field(min_length=10, max_length=3000)
-    website: str = Field(default="", max_length=200)
-
-
-class Enquiry(BaseDocument):
-    name: str
-    email: str
-    phone: str
-    service: str
-    project_location: str
-    message: str
-    ip: str
-    email_status: str = "pending"
-    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-
-
-class EnquiryResult(BaseModel):
-    id: str
-    status: str
-    email_sent: bool
 
 
 class ReviewItem(BaseModel):
@@ -182,7 +111,6 @@ async def fetch_indiamart_reviews() -> dict:
             break
 
     # Extract reviews from the page text
-    # The reviews are in a concatenated format in the page
     page_text = soup.get_text()
 
     # Parse individual reviews from the concatenated text
@@ -200,11 +128,6 @@ async def fetch_indiamart_reviews() -> dict:
 def parse_reviews_from_text(text: str) -> list[dict]:
     """Parse individual reviews from concatenated page text."""
     reviews = []
-
-    # The text contains reviews in a pattern like:
-    # "NameLocationDateRated without a written review.ResponseQualityDeliveryService"
-    # or "NameLocationDatetextResponseQualityDeliveryResponse from Seller"
-    # Actual format from IndiaMART: "Response from Seller (18-September-25)thank 😊"
 
     # Known reviewers from the data extracted from IndiaMART testimonial page
     known_reviewers = [
@@ -228,7 +151,6 @@ def parse_reviews_from_text(text: str) -> list[dict]:
     ]
 
     for name, location, date, service in known_reviewers:
-        # Check if this reviewer has written text (only Suman Thakur has "good")
         has_written = False
         review_text = None
         seller_response = None
@@ -249,8 +171,6 @@ def parse_reviews_from_text(text: str) -> list[dict]:
                 review_text = None
 
             # Try to extract seller response
-            # Pattern: "Response from Seller (DD-Month-YY)response_text"
-            # The date is in parentheses immediately after "Response from Seller"
             seller_response_match = re.search(
                 r'Response from Seller\s*\((\d{1,2}-\w+-\d{2,4})\)([\s\S]*?)(?:\s*(?:Response|Quality|Delivery|Response from Seller|[A-Z][a-z]+\s+\w+)|$)',
                 section,
@@ -274,10 +194,6 @@ def parse_reviews_from_text(text: str) -> list[dict]:
                         seller_response_date = format_date(date_match.group(1))
                         # Remove date from response text
                         seller_response = seller_response.replace(date_match.group(0), '').strip()
-
-            # Try to extract individual category ratings (Quality, Delivery, Response)
-            # These appear to be company-level metrics, not per-review, so we omit them
-            # per the requirement not to confuse company-level profile metrics with individual review metrics
 
         # NOTE: Individual star ratings are NOT available from IndiaMART source.
         # Only aggregate distribution is provided (94% 5-star, 6% 1-star).
@@ -367,25 +283,6 @@ async def get_cached_reviews() -> dict:
         }
 
 
-def enquiry_email_html(e: Enquiry) -> str:
-    rows = [("Name", e.name), ("Phone", e.phone), ("Service / Requirement", e.service),
-            ("Project location", e.project_location)]
-    cells = "".join(
-        f'<tr><td style="padding:6px 16px 6px 0;color:#667;vertical-align:top">{escape(k)}</td>'
-        f'<td style="padding:6px 0"><strong>{escape(v)}</strong></td></tr>' for k, v in rows)
-    return (
-        '<table role="presentation" width="100%"><tr><td style="padding:24px;font-family:Arial,sans-serif;color:#17221D">'
-        '<h2 style="margin:0 0 16px">New website enquiry</h2>'
-        f'<table role="presentation">{cells}'
-        f'<tr><td style="padding:6px 16px 6px 0;color:#667">Email</td><td style="padding:6px 0">'
-        f'<a href="mailto:{escape(e.email)}">Reply to the enquirer</a> &nbsp; {escape(e.email).replace("@", " [at] ").replace(".", " . ")}</td></tr></table>'
-        f'<p style="margin:20px 0 6px;color:#667">Message</p>'
-        f'<p style="margin:0;white-space:pre-wrap;line-height:1.5">{escape(e.message)}</p>'
-        f'<p style="margin-top:28px;font-size:12px;color:#888">Sent by the {escape(os.environ["EMAIL_FROM_NAME"])} '
-        'website enquiry form. The enquiry is also stored on the website server.</p></td></tr></table>'
-    )
-
-
 # Security headers middleware
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Add security headers to all responses."""
@@ -440,32 +337,6 @@ async def root():
     return {"status": "ok"}
 
 
-@api_router.post("/enquiries", response_model=EnquiryResult, status_code=201)
-@limiter.limit("5/10minute")  # Stricter limit for enquiries
-async def create_enquiry(request: Request, payload: EnquiryCreate):
-    if payload.website:
-        raise HTTPException(status_code=400, detail="Invalid submission")
-    ip = (request.headers.get("x-forwarded-for") or (request.client.host if request.client else "")).split(",")[0].strip()
-    since = (datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat()
-    if await db.enquiries.count_documents({"ip": ip, "created_at": {"$gte": since}}) >= 5:
-        raise HTTPException(status_code=429, detail="Too many enquiries. Please try again in a few minutes.")
-
-    enquiry = Enquiry(**payload.model_dump(exclude={"website"}), ip=ip)
-    result = await db.enquiries.insert_one(enquiry.to_mongo())
-
-    email_sent = False
-    try:
-        await send_email(to=os.environ["OWNER_EMAIL"],
-                         subject=f"New enquiry: {enquiry.service} - {enquiry.name}"[:150],
-                         html=enquiry_email_html(enquiry))
-        email_sent = True
-    except Exception as exc:
-        logger.error("Enquiry %s saved but email not sent: %s", result.inserted_id, exc)
-    await db.enquiries.update_one({"_id": result.inserted_id},
-                                  {"$set": {"email_status": "sent" if email_sent else "failed"}})
-    return EnquiryResult(id=str(result.inserted_id), status="received", email_sent=email_sent)
-
-
 @api_router.get("/reviews", response_model=ReviewsResponse)
 @limiter.limit("30/minute")  # Limit reviews endpoint to prevent excessive scraping
 async def get_reviews(request: Request):
@@ -498,16 +369,3 @@ app.add_middleware(
 frontend_build = Path(__file__).parent.parent / "frontend" / "build"
 if frontend_build.exists():
     app.mount("/", StaticFiles(directory=frontend_build, html=True), name="frontend")
-
-
-@app.on_event("startup")
-async def start_index_build():
-    app.state.index_task = asyncio.create_task(ensure_indexes())
-
-
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    app.state.index_task.cancel()
-    with suppress(asyncio.CancelledError):
-        await app.state.index_task
-    client.close()

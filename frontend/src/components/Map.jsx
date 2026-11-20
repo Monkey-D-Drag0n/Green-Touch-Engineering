@@ -23,17 +23,18 @@ const getZoomFromBounds = (bounds, mapWidth, mapHeight) => {
   return Math.min(latZoom, lonZoom) - 1; // Add some padding
 };
 
-// Rewa bounds from original OSM embed
+// G7RX+MWW Samdariya Gold, Aurrhat, Narendra Nagar, Hari Bhushan Nagar, Rewa, Madhya Pradesh 486001
+// Source: OpenStreetMap Nominatim - geocoded from Plus Code G7RX+MWW
 const REWA_BOUNDS = {
-  minLat: 24.45,
-  minLon: 81.18,
-  maxLat: 24.62,
-  maxLon: 81.42,
+  minLat: 24.5423515,
+  minLon: 81.2997694,
+  maxLat: 24.5424515,
+  maxLon: 81.2998694,
 };
 
 const REWA_CENTER = {
-  lat: (REWA_BOUNDS.minLat + REWA_BOUNDS.maxLat) / 2,
-  lng: (REWA_BOUNDS.minLon + REWA_BOUNDS.maxLon) / 2,
+  lat: 24.5424015,
+  lng: 81.2998194,
 };
 
 const MapAttribution = () => {

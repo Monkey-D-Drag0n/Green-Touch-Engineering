@@ -5,7 +5,7 @@ export const INDIAMART_REVIEWS_URL = "https://www.indiamart.com/greentouch-engin
 export const COMPANY = {
   name: "Green Touch Engineering Private Limited",
   short: "Green Touch Engineering",
-  location: "Rewa, Madhya Pradesh, India",
+  location: "G7RX+MWW Samdariya Gold, Aurrhat, Narendra Nagar, Hari Bhushan Nagar, Rewa, Madhya Pradesh 486001, India",
   phones: [
     { label: "+91 9473448022", href: "tel:+919473448022" },
     { label: "+91 9631657314", href: "tel:+919631657314" },
@@ -16,8 +16,8 @@ export const COMPANY = {
     { day: "Saturday", time: "10:00 AM – 2:00 PM IST" },
     { day: "Sunday", time: "Closed" },
   ],
-  mapEmbed: "https://www.openstreetmap.org/export/embed.html?bbox=81.18%2C24.45%2C81.42%2C24.62&layer=mapnik",
-  mapLink: "https://www.google.com/maps/search/?api=1&query=Rewa%2C+Madhya+Pradesh%2C+India",
+  mapEmbed: "https://www.openstreetmap.org/export/embed.html?bbox=81.2997694%2C24.5423515%2C81.2998694%2C24.5424515&layer=mapnik",
+  mapLink: "https://www.google.com/maps/search/?api=1&query=G7RX%2BMWW%20Samdariya%20Gold%20Aurrhat%20Narendra%20Nagar%20Hari%20Bhushan%20Nagar%20Rewa%20Madhya%20Pradesh%20486001%20India",
 };
 
 // Set `url` to the official profile link to activate an icon. Unknown links stay null (never invented).
@@ -194,7 +194,7 @@ export const ENQUIRY_SERVICES = [...SERVICES.map((s) => s.title), "Other / Not s
 
 export const LEGAL = {
   privacy: { title: "Privacy Policy", body: [
-    "When you submit the enquiry form, the name, email address, phone number, project location and message you provide are stored on this website's server and emailed to Green Touch Engineering Private Limited so that the team can respond.",
+    "When you submit the enquiry form, the name, email address, phone number, project location and message you provide are redirected to Green Touch Engineering's IndiaMART business page where you can continue your enquiry directly with the team.",
     "This information is used only to respond to your enquiry. To ask for your enquiry details to be corrected or deleted, write to greentouchengineering5@gmail.com.",
     "The contact section loads a map from OpenStreetMap, which may receive your IP address when the map is displayed." ] },
   terms: { title: "Terms & Conditions", body: [

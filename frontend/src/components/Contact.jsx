@@ -1,13 +1,10 @@
 import { useRef, useState } from "react";
-import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight, Check, Loader2, MapPin } from "lucide-react";
 import { Btn, Corners, EASE, MaskedLines, Reveal, SectionLabel } from "./primitives";
-import { COMPANY, ENQUIRY_SERVICES } from "../data/site";
+import { COMPANY, ENQUIRY_SERVICES, INDIAMART_URL } from "../data/site";
 import { LocationMap } from "./Map";
 import { cn } from "../lib/utils";
-
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const Details = ({ idPrefix }) => (
   <dl className="grid gap-8 sm:grid-cols-2">
@@ -46,7 +43,7 @@ export const Location = () => (
       <div className="lg:col-span-5">
         <SectionLabel index="08">Location & Contact</SectionLabel>
         <h2 className="display h-section mt-8">
-          <MaskedLines lines={["Based in", <><em className="italic text-aqua">Rewa,</em></>, "Madhya Pradesh."]} />
+          <MaskedLines lines={["Based in", <><em className="italic text-aqua">Samdariya Gold,</em></>, "Rewa, Madhya Pradesh."]} />
         </h2>
         <Reveal className="mt-8">
           <p className="text-lg font-medium" data-testid="location-company-name">{COMPANY.name}</p>
@@ -59,8 +56,8 @@ export const Location = () => (
         <div className="relative h-full min-h-[24rem] overflow-hidden rounded-md border border-border lg:min-h-[36rem]">
           <LocationMap />
           <div className="pointer-events-none absolute left-4 top-4 rounded bg-background/90 px-4 py-3 backdrop-blur">
-            <p className="label !text-[0.65rem] text-aqua">City-level location</p>
-            <p className="mt-1 text-sm font-medium">Rewa, Madhya Pradesh, India</p>
+            <p className="label !text-[0.65rem] text-aqua">Samdariya Gold, Rewa</p>
+            <p className="mt-1 text-sm font-medium">Madhya Pradesh 486001, India</p>
           </div>
           <a href={COMPANY.mapLink} target="_blank" rel="noopener noreferrer" data-testid="location-map-link"
             className="absolute bottom-4 right-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-foreground px-5 text-sm font-medium text-background transition-colors duration-300 hover:bg-aqua">
@@ -136,33 +133,23 @@ const EnquiryForm = ({ service, setService }) => {
     setErrors(found);
     const firstBad = FIELDS.find((f) => found[f.name]);
     if (firstBad) return form.current.elements[firstBad.name].focus();
-    setState("loading");
-    setFailure("");
-    try {
-      await axios.post(`${API}/enquiries`, all);
-      setState("success");
-      setValues(EMPTY);
-      setService("");
-    } catch (err) {
-      const d = err.response?.data?.detail;
-      setFailure(typeof d === "string" ? d : "The enquiry could not be sent. Please try again, or email us directly.");
-      setState("idle");
-    }
+    setState("redirecting");
+    // Redirect to IndiaMART for enquiry continuation
+    window.location.href = INDIAMART_URL;
     return undefined;
   };
 
   return (
     <div className="relative rounded-md border border-border bg-card p-6 sm:p-10">
       <AnimatePresence mode="wait">
-        {state === "success" ? (
-          <motion.div key="ok" role="status" data-testid="enquiry-success" className="flex min-h-[28rem] flex-col items-start justify-center"
+        {state === "redirecting" ? (
+          <motion.div key="redirect" role="status" data-testid="enquiry-redirect" className="flex min-h-[28rem] flex-col items-start justify-center"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.7, ease: EASE }}>
-            <span className="grid h-14 w-14 place-items-center rounded-full border border-aqua text-aqua"><Check className="h-5 w-5" aria-hidden="true" /></span>
-            <h3 className="display mt-8 text-4xl sm:text-5xl">Enquiry received.</h3>
+            <span className="grid h-14 w-14 place-items-center rounded-full border border-aqua text-aqua"><Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /></span>
+            <h3 className="display mt-8 text-4xl sm:text-5xl">Redirecting to IndiaMART…</h3>
             <p className="mt-4 max-w-md text-base leading-relaxed text-muted-foreground">
-              Thank you. Your enquiry has been recorded and passed to the Green Touch Engineering team, who will get back to you.
+              Your enquiry details are ready. You will continue your enquiry on Green Touch Engineering's IndiaMART page.
             </p>
-            <Btn variant="outline" icon={false} className="mt-8" onClick={() => setState("idle")} data-testid="enquiry-send-another-button">Send another enquiry</Btn>
           </motion.div>
         ) : (
           <motion.form key="form" ref={form} noValidate onSubmit={submit} data-testid="enquiry-form" exit={{ opacity: 0 }} className="grid gap-x-8 gap-y-8 sm:grid-cols-2">
@@ -172,8 +159,8 @@ const EnquiryForm = ({ service, setService }) => {
               <input id="enquiry-website" name="website" tabIndex={-1} autoComplete="off" value={values.website} onChange={onChange} />
             </div>
             <div className="flex flex-wrap items-center gap-5 sm:col-span-2">
-              <Btn type="submit" disabled={state === "loading"} icon={state !== "loading"} data-testid="enquiry-form-submit-button">
-                {state === "loading" ? <span className="flex items-center gap-2"><Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />Sending…</span> : "Send Enquiry"}
+              <Btn type="submit" disabled={state === "redirecting"} icon={state !== "redirecting"} data-testid="enquiry-form-submit-button">
+                {state === "redirecting" ? <span className="flex items-center gap-2"><Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />Redirecting…</span> : "Continue on IndiaMART"}
               </Btn>
               <p className="text-xs text-muted-foreground">All fields are required.</p>
             </div>

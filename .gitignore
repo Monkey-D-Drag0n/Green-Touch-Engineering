@@ -1,10 +1,57 @@
+# Dependencies
 node_modules/
-build/
-venv/
+backend/venv/
+
+# Build outputs
+frontend/build/
+backend/build/
+
+# Python
 __pycache__/
-*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Environment files
 .env
-.env.*
+.env.local
+.env.*.local
+.env.production
+backend/.env
+backend/.env.production
+frontend/.env
+frontend/.env.production
+
+# Logs
 *.log
-.cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+backend/server.log
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Testing/coverage
+coverage/
+.nyc_output/
+
+# Misc
+*.tmp
+*.temp
+.cache/
+
+# Build artifacts
+frontend/node_modules/.cache/
+# Local Claude worktrees
+.claude/worktrees/
