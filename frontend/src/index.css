@@ -1,0 +1,254 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --background: 45 29% 93%;
+        --foreground: 153 19% 11%;
+        --card: 45 30% 97%;
+        --card-foreground: 153 19% 11%;
+        --popover: 45 30% 97%;
+        --popover-foreground: 153 19% 11%;
+        --primary: 153 19% 11%;
+        --primary-foreground: 45 29% 93%;
+        --secondary: 52 20% 85%;
+        --secondary-foreground: 153 19% 11%;
+        --muted: 50 20% 88%;
+        --muted-foreground: 150 8% 30%;
+        --accent: 50 20% 88%;
+        --accent-foreground: 153 19% 11%;
+        --destructive: 6 62% 40%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 153 12% 11% / 0.16;
+        --input: 153 12% 11% / 0.28;
+        --ring: 190 45% 30%;
+        --aqua: 190 48% 27%;
+        --bronze: 37 24% 36%;
+        --grid-line: 153 19% 11% / 0.07;
+        --radius: 0.5rem;
+    }
+    .dark {
+        --background: 153 19% 11%;
+        --foreground: 48 29% 93%;
+        --card: 132 9% 16%;
+        --card-foreground: 48 29% 93%;
+        --popover: 132 9% 14%;
+        --popover-foreground: 48 29% 93%;
+        --primary: 48 29% 93%;
+        --primary-foreground: 153 19% 11%;
+        --secondary: 132 9% 20%;
+        --secondary-foreground: 48 29% 93%;
+        --muted: 132 9% 18%;
+        --muted-foreground: 86 11% 70%;
+        --accent: 132 9% 20%;
+        --accent-foreground: 48 29% 93%;
+        --destructive: 6 70% 66%;
+        --destructive-foreground: 153 19% 11%;
+        --border: 52 20% 77% / 0.16;
+        --input: 52 20% 77% / 0.3;
+        --ring: 189 40% 63%;
+        --aqua: 189 40% 63%;
+        --bronze: 37 28% 62%;
+        --grid-line: 52 20% 77% / 0.06;
+    }
+    .surface-dark {
+        --background: 140 9% 9%;
+        --foreground: 48 29% 93%;
+        --card: 132 9% 13%;
+        --card-foreground: 48 29% 93%;
+        --muted: 132 9% 16%;
+        --muted-foreground: 86 11% 70%;
+        --primary: 48 29% 93%;
+        --primary-foreground: 153 19% 11%;
+        --border: 52 20% 77% / 0.16;
+        --ring: 189 40% 63%;
+        --aqua: 189 40% 63%;
+        --bronze: 37 28% 62%;
+        --grid-line: 52 20% 77% / 0.06;
+        background-color: hsl(var(--background));
+        color: hsl(var(--foreground));
+    }
+
+    * {
+        border-color: hsl(var(--border));
+    }
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+    body {
+        margin: 0;
+        background-color: hsl(var(--background));
+        color: hsl(var(--foreground));
+        font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overflow-x: hidden;
+        transition: background-color 0.5s ease, color 0.5s ease;
+    }
+    ::selection {
+        background: hsl(var(--aqua));
+        color: hsl(var(--background));
+    }
+    :focus-visible {
+        outline: 2px solid hsl(var(--ring));
+        outline-offset: 3px;
+        border-radius: 2px;
+    }
+    section[id] {
+        scroll-margin-top: 72px;
+    }
+}
+
+@layer components {
+    .container-x {
+        width: 100%;
+        max-width: 1640px;
+        margin-inline: auto;
+        padding-inline: clamp(1.25rem, 4vw, 4rem);
+    }
+    .section-y {
+        padding-block: clamp(5rem, 11vw, 11rem);
+    }
+    .label {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 0.75rem;
+        line-height: 1.4;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+    .display {
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        line-height: 0.98;
+    }
+    .h-section {
+        font-size: clamp(2.4rem, 5.2vw, 5.25rem);
+    }
+    .marquee-text {
+        font-size: clamp(3rem, 5vw, 5rem);
+        font-weight: 500;
+    }
+    .blueprint {
+        background-image:
+            linear-gradient(hsl(var(--grid-line)) 1px, transparent 1px),
+            linear-gradient(90deg, hsl(var(--grid-line)) 1px, transparent 1px);
+        background-size: 64px 64px;
+    }
+    .field {
+        width: 100%;
+        background: transparent;
+        border: 0;
+        border-bottom: 1px solid hsl(var(--input));
+        padding: 0.85rem 0;
+        font-size: 1rem;
+        color: hsl(var(--foreground));
+        transition: border-color 0.25s ease;
+        border-radius: 0;
+    }
+    .field::placeholder {
+        color: hsl(var(--muted-foreground) / 0.7);
+    }
+    .field:focus {
+        outline: none;
+        border-bottom-color: hsl(var(--aqua));
+        box-shadow: 0 1px 0 0 hsl(var(--aqua));
+    }
+    .field[aria-invalid="true"] {
+        border-bottom-color: hsl(var(--destructive));
+    }
+    select.field option {
+        background: hsl(var(--card));
+        color: hsl(var(--foreground));
+    }
+    .marquee-track {
+        display: flex;
+        width: max-content;
+        animation: marquee 70s linear infinite;
+        will-change: transform;
+    }
+    .osm-map {
+        filter: grayscale(0.55) contrast(0.95) sepia(0.12);
+    }
+    .dark .osm-map {
+        filter: invert(0.92) hue-rotate(170deg) grayscale(0.4) brightness(0.9) contrast(0.9);
+    }
+    /* Hero Facts reveal animation */
+    .reveal-fact {
+        opacity: 0;
+        transform: translateY(24px);
+        animation: reveal-fact 0.9s ease-out forwards;
+    }
+    @keyframes reveal-fact {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .reveal-fact {
+            animation: none;
+            opacity: 1;
+            transform: none;
+        }
+    }
+}
+
+@keyframes marquee {
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+@keyframes flow {
+    to {
+        stroke-dashoffset: -28;
+    }
+}
+.flow-line {
+    stroke-dasharray: 6 8;
+    animation: flow 1.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .marquee-track,
+    .flow-line {
+        animation: none;
+    }
+    * {
+        scroll-behavior: auto !important;
+    }
+}
+
+@layer base {
+    [data-debug-wrapper="true"] {
+        display: contents !important;
+    }
+
+    [data-debug-wrapper="true"] > * {
+        margin-left: inherit;
+        margin-right: inherit;
+        margin-top: inherit;
+        margin-bottom: inherit;
+        padding-left: inherit;
+        padding-right: inherit;
+        padding-top: inherit;
+        padding-bottom: inherit;
+        column-gap: inherit;
+        row-gap: inherit;
+        gap: inherit;
+        border-left-width: inherit;
+        border-right-width: inherit;
+        border-top-width: inherit;
+        border-bottom-width: inherit;
+        border-left-style: inherit;
+        border-right-style: inherit;
+        border-top-style: inherit;
+        border-bottom-style: inherit;
+        border-left-color: inherit;
+        border-right-color: inherit;
+        border-top-color: inherit;
+        border-bottom-color: inherit;
+    }
+}
