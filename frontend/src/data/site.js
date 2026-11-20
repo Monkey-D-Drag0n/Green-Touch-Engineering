@@ -10,10 +10,9 @@ export const COMPANY = {
     { label: "+91 9473448022", href: "tel:+919473448022" },
     { label: "+91 9631657314", href: "tel:+919631657314" },
   ],
-  email: "greentouchengineering5@gmail.com",
+  email: "Greentouchengineeringpvt.ltd15@gmail.com",
   hours: [
-    { day: "Monday – Friday", time: "9:00 AM – 6:00 PM IST" },
-    { day: "Saturday", time: "10:00 AM – 2:00 PM IST" },
+    { day: "Monday – Saturday", time: "9:00 AM – 6:00 PM" },
     { day: "Sunday", time: "Closed" },
   ],
   mapEmbed: "https://www.openstreetmap.org/export/embed.html?bbox=81.2997694%2C24.5423515%2C81.2998694%2C24.5424515&layer=mapnik",
@@ -195,7 +194,7 @@ export const ENQUIRY_SERVICES = [...SERVICES.map((s) => s.title), "Other / Not s
 export const LEGAL = {
   privacy: { title: "Privacy Policy", body: [
     "When you submit the enquiry form, the name, email address, phone number, project location and message you provide are redirected to Green Touch Engineering's IndiaMART business page where you can continue your enquiry directly with the team.",
-    "This information is used only to respond to your enquiry. To ask for your enquiry details to be corrected or deleted, write to greentouchengineering5@gmail.com.",
+    "This information is used only to respond to your enquiry. To ask for your enquiry details to be corrected or deleted, write to Greentouchengineeringpvt.ltd15@gmail.com.",
     "The contact section loads a map from OpenStreetMap, which may receive your IP address when the map is displayed." ] },
   terms: { title: "Terms & Conditions", body: [
     "The content of this website is provided for general information about the services of Green Touch Engineering Private Limited. It does not constitute an offer or a contract.",
